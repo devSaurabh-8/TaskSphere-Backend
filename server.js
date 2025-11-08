@@ -9,7 +9,7 @@ import userRoutes from "./routes/userRoutes.js";
 dotenv.config();
 const app = express();
 
-// ✅ CORS configuration for frontend (Render + Vercel)
+// ✅ Enable CORS for frontend
 app.use(
   cors({
     origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
@@ -18,26 +18,24 @@ app.use(
   })
 );
 
-// ✅ Middleware to parse JSON
+// ✅ Parse incoming JSON
 app.use(express.json());
 
-// ✅ MongoDB Connection
+// ✅ Health route (for Render check)
+app.get("/", (req, res) => {
+  res.send("✅ TaskSphere Backend is running successfully!");
+});
+
+// ✅ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+  .catch((err) => console.error("❌ Mongo Error:", err));
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// ✅ Health check route (for Render + debugging)
-app.get("/", (req, res) => {
-  res.send("✅ TaskSphere Backend is running successfully!");
-});
-
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
