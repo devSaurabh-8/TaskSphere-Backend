@@ -10,18 +10,18 @@ import userRoutes from "./routes/userRoutes.js";
 dotenv.config();
 const app = express();
 
-// 🌐 Keep Render instance awake
+// 🌐 Keep Render awake
 setInterval(() => {
   https.get("https://tasksphere-backend-v2zt.onrender.com");
   console.log("💡 Keep-alive ping sent to Render");
 }, 14 * 60 * 1000); // every 14 minutes
 
-// ✅ CORS setup for Vercel + Local
+// ✅ CORS Configuration (Vercel + Local)
 app.use(
   cors({
     origin: [
-      "https://task-sphere-frontend-indol.vercel.app", // production frontend
-      "http://localhost:5173", // local dev
+      "https://task-sphere-frontend-indol.vercel.app", // Production frontend
+      "http://localhost:5173", // Local dev
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -29,10 +29,10 @@ app.use(
   })
 );
 
-// ✅ Parse JSON requests
+// ✅ Parse JSON
 app.use(express.json());
 
-// ✅ Health check route
+// ✅ Health route (Render check)
 app.get("/", (req, res) => {
   res.status(200).send("✅ TaskSphere Backend is running successfully!");
 });
@@ -43,11 +43,11 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 
-// ✅ API Routes
+// ✅ API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// ✅ Handle invalid routes
+// ✅ Catch-all route (safety)
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
