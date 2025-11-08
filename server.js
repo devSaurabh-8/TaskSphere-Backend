@@ -8,14 +8,14 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Step 1: Manual full CORS handler
+// ✅ Step 1: CORS fix (Render + Vercel)
 app.use((req, res, next) => {
   const allowedOrigins = [
-    "https://task-sphere-frontend-indol.vercel.app", // your vercel app
-    "http://localhost:5173", // for local testing
+    "https://task-sphere-frontend-indol.vercel.app",
+    "http://localhost:5173",
   ];
-  const origin = req.headers.origin;
 
+  const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
@@ -30,7 +30,6 @@ app.use((req, res, next) => {
   );
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  // ✅ Must handle preflight OPTIONS
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -41,18 +40,18 @@ app.use((req, res, next) => {
 // ✅ Step 2: Middleware
 app.use(express.json());
 
-// ✅ Step 3: Root test
+// ✅ Step 3: Root health check
 app.get("/", (req, res) => {
-  res.send("✅ TaskSphere Backend is running successfully!");
+  res.send("✅ TaskSphere Backend running on Render!");
 });
 
-// ✅ Step 4: MongoDB Connection
+// ✅ Step 4: MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 
-// ✅ Step 5: Routes
+// ✅ Step 5: Proper Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
@@ -61,7 +60,7 @@ app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// ✅ Step 7: Start server
+// ✅ Step 7: Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
