@@ -8,43 +8,52 @@ import userRoutes from "./routes/userRoutes.js";
 dotenv.config();
 const app = express();
 
-// ✅ CORS configuration — must be placed before routes
-app.use(
-  cors({
-    origin: [
-      "https://task-sphere-frontend-indol.vercel.app", // your frontend domain
-      "http://localhost:5173", // for local dev
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// ✅ Fix CORS once and for all
+const allowedOrigins = [
+  "https://task-sphere-frontend-indol.vercel.app",
+  "http://localhost:5173",
+];
 
-// ✅ Handle preflight requests globally
-app.options("*", cors());
-
-// ✅ Middleware
-app.use(express.json());
-
-// ✅ Root route
-app.get("/", (req, res) => {
-  res.status(200).send("✅ TaskSphere Backend is running successfully!");
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
 });
 
-// ✅ Database connection
+app.use(express.json());
+
+// ✅ Health check
+app.get("/", (req, res) => {
+  res.send("✅ TaskSphere Backend is running successfully!");
+});
+
+// ✅ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+  .catch((err) => console.error("❌ Mongo Error:", err));
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// ✅ Server listening
+// ✅ Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
