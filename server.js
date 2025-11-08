@@ -2,19 +2,18 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 const app = express();
 
-// ✅ Enable CORS for Vercel frontend
+// ✅ CORS configuration — must be placed before routes
 app.use(
   cors({
     origin: [
-      "https://task-sphere-frontend-indol.vercel.app", // your Vercel domain
-      "http://localhost:5173", // local testing
+      "https://task-sphere-frontend-indol.vercel.app", // your frontend domain
+      "http://localhost:5173", // for local dev
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -22,24 +21,30 @@ app.use(
   })
 );
 
-// ✅ Middleware to parse JSON
+// ✅ Handle preflight requests globally
+app.options("*", cors());
+
+// ✅ Middleware
 app.use(express.json());
 
-// ✅ Health check
+// ✅ Root route
 app.get("/", (req, res) => {
-  res.send("✅ TaskSphere Backend is running successfully!");
+  res.status(200).send("✅ TaskSphere Backend is running successfully!");
 });
 
-// ✅ MongoDB connection
+// ✅ Database connection
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ Mongo Error:", err));
+  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-// ✅ API routes
+// ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// ✅ Server start
+// ✅ Server listening
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
