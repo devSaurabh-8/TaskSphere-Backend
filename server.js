@@ -8,50 +8,57 @@ import userRoutes from "./routes/userRoutes.js";
 dotenv.config();
 const app = express();
 
-// ✅ Strict CORS Fix (Render + Vercel)
+// ✅ 1. Safe CORS setup — absolute working for Render + Vercel
 const allowedOrigins = [
-  "https://task-sphere-frontend-indol.vercel.app", // your Vercel frontend
-  "http://localhost:5173", // for local dev
+  "https://task-sphere-frontend-indol.vercel.app", // your frontend (vercel)
+  "http://localhost:5173", // for local testing
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, Postman)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
 
-// ✅ Preflight handler (OPTIONS)
-app.options("*", cors());
+  // ✅ Stop here for preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
-// ✅ JSON Parser
+// ✅ 2. JSON Parser
 app.use(express.json());
 
-// ✅ Root route (Render health check)
+// ✅ 3. Health check
 app.get("/", (req, res) => {
   res.status(200).send("✅ TaskSphere Backend is running successfully!");
 });
 
-// ✅ MongoDB Connection
+// ✅ 4. Database connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ Mongo Error:", err));
+  .catch((err) => console.error("❌ MongoDB Error:", err));
 
-// ✅ API Routes
+// ✅ 5. Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// ✅ Server
+// ✅ 6. Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
