@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js"; // ✅ auth routes (register/login)
-// import userRoutes from "./routes/userRoutes.js"; // only if you actually have it
+import userRoutes from "./routes/userRoutes.js"; 
 
 dotenv.config();
 
@@ -35,7 +35,7 @@ app.get("/", (req, res) => {
 
 // ✅ API routes
 app.use("/api/auth", authRoutes); // register/login routes
-// app.use("/api/users", userRoutes); // enable only if defined
+app.use("/api/users", userRoutes); // enable only if defined
 
 // ✅ 404 handler
 app.use((req, res) => {
