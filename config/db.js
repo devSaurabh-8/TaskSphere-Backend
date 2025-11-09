@@ -1,24 +1,16 @@
 import mongoose from "mongoose";
 
-export const connectDB = async () => {
+const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI?.trim();
-    console.log("Mongo URI =>", uri);
-
-    if (!uri) throw new Error(" No Mongo URI found");
-
-    mongoose.set("strictQuery", true);
-
-    await mongoose.connect(uri, {
-      dbName: process.env.MONGO_DB || "tasksphere",
-      serverApi: { version: "1", strict: true, deprecationErrors: true },
-      connectTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
-
-    console.log(" MongoDB Connected Successfully");
-  } catch (err) {
-    console.error(" MongoDB connection error:", err.message);
+    console.log("✅ MongoDB Connected");
+  } catch (error) {
+    console.error(`❌ Error: ${error.message}`);
     process.exit(1);
   }
 };
+
+export default connectDB; // ✅ this is the missing part
