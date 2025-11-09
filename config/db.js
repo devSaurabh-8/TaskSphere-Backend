@@ -13,4 +13,4 @@ const connectDB = async () => {
   }
 };
 
-export default connectDB; // ✅ this is the missing part
+export default connectDB; 

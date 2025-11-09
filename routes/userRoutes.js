@@ -3,7 +3,7 @@ import User from "../models/userModel.js";
 
 const router = express.Router();
 
-// ✅ Get all users
+//  Get all users
 router.get("/", async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✅ Get single user by ID (for view/edit)
+//  Get single user by ID (for view/edit)
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -25,7 +25,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✅ Create new user
+//  Create new user
 router.post("/", async (req, res) => {
   try {
     const { name, email, city, password } = req.body;
@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✅ Update user by ID
+//  Update user by ID
 router.put("/:id", async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -53,7 +53,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// ✅ Delete user
+//  Delete user
 router.delete("/:id", async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
