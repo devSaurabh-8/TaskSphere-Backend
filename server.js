@@ -1,62 +1,46 @@
 import express from "express";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js"; // make sure your route file name matches this
+import userRoutes from "./routes/userRoutes.js"; // optional, if you have separate user routes
 
-dotenv.config();
+// Initialize app
 const app = express();
+dotenv.config();
 
-// ✅ Step 1: Correct CORS config (works for Render + Vercel)
-const allowedOrigins = [
-  "https://task-sphere-frontend-indol.vercel.app",
-  "http://localhost:5173",
-];
+// Connect MongoDB
+connectDB();
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,POST,PUT,DELETE,PATCH,OPTIONS"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
-
-// ✅ Step 2: Middleware
+// Middleware
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://task-sphere-frontend-indol.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
-// ✅ Step 3: MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ Mongo Error:", err.message));
-
-// ✅ Step 4: Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-
-// ✅ Step 5: Root test route
+// Routes
 app.get("/", (req, res) => {
   res.send("🚀 TaskSphere Backend running successfully!");
 });
 
-// ✅ Step 6: Catch all 404
-app.use((req, res) => res.status(404).json({ message: "Route not found" }));
+app.use("/api/auth", authRoutes); // <-- Register/Login routes
+// If you have other routes like CRUD:
+app.use("/api/users", userRoutes); // optional
 
-// ✅ Step 7: Server
+// Handle 404 (wrong routes)
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
